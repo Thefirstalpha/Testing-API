@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - "E:/Documents/docker/pgdata:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+    networks:
+      myNetwork:
+        ipv4_address: 172.20.0.2
+  app_1:
+    image: api
+    restart: always
+    environment:
+      REGION: 'paris-1'
+      DB_URI: 'postgresql://postgres:secret@172.20.0.2:5432'
+    ports:
+      - "8080:8080"
+    networks:
+      myNetwork:
+        ipv4_address: 172.20.0.3
+    depends_on:
+      - db
+  app_2:
+    image: api
+    restart: always
+    environment:
+      REGION: 'paris-2'
+      DB_URI: 'postgresql://postgres:secret@172.20.0.2:5432'
+    ports:
+      - "8081:8080"
+    networks:
+      myNetwork:
+        ipv4_address: 172.20.0.4
+    links:
+      - db
+    depends_on:
+      - db
+
+networks:
+  myNetwork:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
